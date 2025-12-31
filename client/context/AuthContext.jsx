@@ -2,16 +2,15 @@ import React from 'react'
 import { createContext } from 'react' 
 import  toast from 'react-hot-toast'
 import axios from 'axios' 
-import {io} from 'socket.io-clinet'     
+import {io} from 'socket.io-client'     
 import { useState } from 'react';
 import { useEffect } from 'react';
-require("dotenv").config();
-const backendUrl=process.env.VITE_BACKEND_URL;
+const backendUrl=import.meta.env.VITE_BACKEND_URL;
 axios.defaults.baseURL=backendUrl;
 
 export const AuthContext=createContext();
 export const AuthProvider=({children})=>{
-    const [token,setToken]=useState(localStorage.getItem("token"));
+    const [token,setToken]=useState(localStorage.getItem("token")|| null);
     const[authUser,setAuthUser]=useState(null);
     const[onlineUsers,setOnlineUsers]=useState([]);
     const[socket,setSocket]=useState(null);
@@ -26,9 +25,56 @@ export const AuthProvider=({children})=>{
             }
         }
         catch(error){
-            toast.error(error.message);
+            console.log("User is not authenticated (Normal for first load)");
+        setAuthUser(null);
         }
     }
+
+//login function to handel user authentication and socket connection
+const login=async(state,credentials)=>{
+    try{
+        const {data}=await axios.post(`/api/auth/${state}`,credentials);
+        if(data.success){
+            setAuthUser(data.userData);//????????
+            connectSocket(data.userData);
+            axios.defaults.headers.common["token"]=data.token;
+            setToken(data.token);
+            localStorage.setItem("token",data.token);
+            toast.success(data.message);
+        }
+        else{      
+        toast.error(data.message);
+    }
+    }
+    catch(error){
+        toast.error(error.message);
+    }
+}
+//logout function to handel user logout and socket disconnection
+const logout=async()=>{
+    localStorage.removeItem("token");
+    setToken(null);
+    setAuthUser(null);
+    setOnlineUsers([])
+    axios.defaults.headers.common["token"]=null;
+    socket.disconnect();
+}
+
+//update profile function
+const updateProfile=async(body)=>{
+    try{
+        const{data}=await axios.put("/api/auth/update-profile",body);
+        if(data.success){
+            setAuthUser(data.user);
+            toast.success("Profile updated successfully")
+        }
+    }
+    catch(error){
+        toast.error(error.message);
+    }
+    }
+
+
     //connect socket function to handle socket connection and online users updates
 const connectSocket=(userData)=>{
     if(!userData||socket?.connected) return;
@@ -55,7 +101,10 @@ useEffect(()=>{
         axios,
         authUser,
         onlineUsers,
-        socket
+        socket,
+        login,
+        logout,
+        updateProfile
     }
 
 

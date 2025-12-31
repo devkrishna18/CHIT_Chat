@@ -1,4 +1,4 @@
-const { cloudinary } = require("../config/cloudinary");
+const cloudinary = require("../config/cloudinary");
 const { generateToken } = require("../lib/utils");
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
@@ -111,7 +111,7 @@ exports.isAuthenticated = async (req, res) => {
 exports.updateProfile=async(req,res)=>{
   try{
     const{profilePic,bio,fullName}=req.body;
-    const userId=req.user._id;
+    const userId=req.user.id;
     let updatedUser;
     if(!profilePic){
       updatedUser=await User.findByIdAndUpdate(userId,{bio,fullName},{new:true});
@@ -127,6 +127,7 @@ exports.updateProfile=async(req,res)=>{
     })
   }
   catch(error){
+    console.log("Error in updateProfile:", error);
      return res.status(500).json({
       success: false,
       message: "Error in updatingProfile",

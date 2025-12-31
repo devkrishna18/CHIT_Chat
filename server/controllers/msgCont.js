@@ -1,7 +1,7 @@
 const { cloudinary } = require("../config/cloudinary");
 const Message = require("../models/message");
 const User = require("../models/User");
-const{io,userSocketMap}=require("../index.js")
+const{io,userSocketMap}=require("../socket.js")
 //get all user except logged in user
 exports.getUserForSideBar=async(req,res)=>{
     try{

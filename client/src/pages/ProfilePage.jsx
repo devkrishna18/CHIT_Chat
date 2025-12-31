@@ -1,17 +1,30 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import assets from '../assets/assets';
+import { AuthContext } from '../../context/AuthContext';
 
 const ProfilePage = () => {
+  const {authUser,updateProfile}=useContext(AuthContext);
   const [Img , setImg]=useState(null);
   const navigate= useNavigate();
-  const[name,setName]=useState("Krishna");
-  const[bio, setBio]=useState("Hi everyone, i am using chit-chat")
+  const[name,setName]=useState(authUser.fullName);
+  const[bio, setBio]=useState(authUser.bio)
 
   const handleSave= async(e)=>{
     e.preventDefault();
+if(!Img){
+  await updateProfile({fullName:name,bio});
+  navigate('/')
+ return;
+}
+const reader= new FileReader();
+reader.readAsDataURL(Img);
+reader.onload= async()=>{
+   const base64Image=reader.result;
+   await updateProfile({fullName:name,profilePic:base64Image,bio});
     navigate('/')
   }
+}
   return (
     <div className='min-h-screen bg-cover bg-no-repeat flex items-center justify-center'>
       <div className=' w-5/6 max-w-2xl backdrop-blur-2xl border-outline-none text-gray-300 border-2 border-gray-600
@@ -39,7 +52,8 @@ const ProfilePage = () => {
   </button>
          </form>
          {/* right */}
-         <img className='max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10' src={assets.logo_icon} alt="" />
+         <img className={`max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10 
+          ${setImg && 'rounded-full'}`} src={authUser?.profilePic || assets.logo_icon} alt="" />
       </div>
 
     </div>
