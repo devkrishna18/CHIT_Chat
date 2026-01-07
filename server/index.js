@@ -12,7 +12,7 @@ const msgRoutes = require("./routes/msgRoutes");
 
 dotenv.config();
 
-const PORT = process.env.PORT || 5000;
+
 
 // 1. Middlewares (Routes se pehle aane chahiye)
 app.use(express.json({ limit: '10mb' })); // Image upload ke liye size badhaya
@@ -36,6 +36,9 @@ app.use("/api/messages", msgRoutes);
 app.use("/api/status", (req, res) => res.send("Server is live and Socket is ready"));
 
 // 4. Server Listen (Server use karein, app nahi)
+if(process.env.NODE_ENV !== 'production'){
+    const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-});
+})};
+module.exports = index;
