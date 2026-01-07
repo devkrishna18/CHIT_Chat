@@ -2,10 +2,24 @@ import React, { useContext } from 'react'
 import assets, { userDummyData } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../context/AuthContext'
+import { ChatContext } from '../../context/ChatContext'
+import { useState,useEffect } from 'react'
 
-const Sidebar = ({selectedUser,setSelectedUser}) => {
- const {logout}=useContext(AuthContext);
+const Sidebar = () => {
+  const{selectedUser,setSelectedUser,getUsers,users,unseenMessages,setUnseenMessages}=useContext(ChatContext);
+ const {logout,onlineUsers}=useContext(AuthContext);
+ const [input,setInput]=useState("");
   const naviagte=useNavigate();
+ const filteredUsers = input 
+    ? users?.filter((user) => user.fullName.toLowerCase().includes(input.toLowerCase())) 
+    : users || [];
+  
+  useEffect(()=>{
+    getUsers();
+
+  },[onlineUsers])
+  
+  
   return (
     <div className={`bg-[#8185B2]/10 h-full p-5 rounded-r-xl overflow-y-scroll text-white
     ${selectedUser?"max-md:hidden":''}`}>
@@ -24,27 +38,27 @@ const Sidebar = ({selectedUser,setSelectedUser}) => {
            </div>
 <div className='flex items-center gap-2 border border-gray-500 px-4 py-3 rounded-full mt-5 bg-[#282142] border-none'>
   <img src={assets.search_icon} alt="search" className='w-3'/>
-  < input type="text" className=' bg-traniparent border-none outline-none
+  < input onChange={(e)=>setInput(e.target.value)} type="text" className=' bg-traniparent border-none outline-none
 text-white text-xs placeholder- [#c8c8c8] flex-1'placeholder='Search User...'/>
 </div>
 
 </div>
    {/* User List */}
         <div className='flex flex-col'>
-          {userDummyData.map((user,index)=>(
+          {filteredUsers.map((user,index)=>(
             <div   
             onClick={()=>{
-              setSelectedUser(user)
+              setSelectedUser(user); setUnseenMessages((prev)=>({...prev,[user._id]:0}))
             }}
             key={index} className={`relative flex items-center gap-2 p-2 pl-4 rounded cursor-pointer max-sm:text-sm
           ${selectedUser?._id===user._id && 'bg-[#282142]/50'}`}>
               <img src={user?.profilePic||assets.avatar_icon}className='w-[35px] aspect-[1/1] rounded-full' alt="" />
               <div className='flex flex-col leading-5'>
                 <p>{user.fullName}</p>{
-                  index<3 ? <span className='text-green-400 text-sm'>Online</span> : <span className='text-neutral-400 text-sm'>Offline</span>
+                  onlineUsers.includes(user._id)? <span className='text-green-400 text-sm'>Online</span> : <span className='text-neutral-400 text-sm'>Offline</span>
                 }
                 </div>
-                {index > 2 && <p className='absolute top-4 right-4 text-sm h-5 w-5 flex justify-center items-center rounded-full bg-violet-500/50'>{index}</p>}
+                {unseenMessages[user._id]>0&& <p className='absolute top-4 right-4 text-sm h-5 w-5 flex justify-center items-center rounded-full bg-violet-500/50'>{unseenMessages[user._id]}</p>}
             </div>
           ))}
         </div>

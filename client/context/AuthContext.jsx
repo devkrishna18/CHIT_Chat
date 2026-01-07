@@ -78,9 +78,14 @@ const updateProfile=async(body)=>{
     //connect socket function to handle socket connection and online users updates
 const connectSocket=(userData)=>{
     if(!userData||socket?.connected) return;
+    const userId = userData._id || userData.id;
+    if(!userId) {
+        console.log("Socket connect nahi ho paya: User ID missing");
+        return;
+    }
     const newSocket=io(backendUrl,{
         query:{
-            userId:userData._id,
+            userId:userId,
         }
     });
     newSocket.connect();

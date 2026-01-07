@@ -99,14 +99,33 @@ const token = generateToken(payload);
 }
 // Check if user is authenticated
 exports.isAuthenticated = async (req, res) => {
+  // try {
+  //   return res.json({ success: true, 
+  //     user: req.user,
+  //     message: "User is authenticated" });
+  // } catch (error) {
+  //   return res.json({ success: false });
+  // }
   try {
-    return res.json({ success: true, 
-      user: req.user,
-      message: "User is authenticated" });
+    // req.user.id hume middleware se mila
+    // Hum DB call karke pura data layenge (_id, profilePic, fullName sab kuch)
+    const user = await User.findById(req.user.id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({ 
+        success: true, 
+        user: user // Ab isme _id zarur hoga!
+    });
+
   } catch (error) {
-    return res.json({ success: false });
+    console.log("Error in checkAuth:", error.message);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
-}
+};
+
 //CONTROLLER TO UPDATE USER PROFILE DETAILS
 exports.updateProfile=async(req,res)=>{
   try{

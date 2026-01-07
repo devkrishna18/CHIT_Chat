@@ -1,11 +1,11 @@
-const { cloudinary } = require("../config/cloudinary");
+const cloudinary = require("../config/cloudinary");
 const Message = require("../models/message");
 const User = require("../models/User");
 const{io,userSocketMap}=require("../socket.js")
 //get all user except logged in user
 exports.getUserForSideBar=async(req,res)=>{
     try{
-        const userId=req.user._id;
+        const userId=req.user.id;
         //finding all user except the logged in
         const filteredUser=await User.find({_id:{$ne:userId}}).select("-password");
         const unseenMessages={};
@@ -43,7 +43,7 @@ exports.getUserForSideBar=async(req,res)=>{
 //Get all msgs for a selected user
 exports.getAllmsgforUser=async(req,res)=>{
     try{
-        const myId=req.user._id;    
+        const myId=req.user.id;    
         const{id:selectedUserId}=req.params;
         const messages=await Message.find({
             $or:[
@@ -85,8 +85,8 @@ exports.markMsgSeen=async(req,res)=>{
 exports.sendMessage=async(req,res)=>{
     try{
         const{text,image}=req.body;
-        const senderId=req.user._id;
-        const{receiverId}=req.body;
+        const senderId=req.user.id;
+        const{id:receiverId}=req.params;
         let imageUrl;
         if(image){
             const imgupload=await cloudinary.uploader.upload(image);
@@ -111,9 +111,12 @@ if(receiverSocketId){
         })
     }
     catch(error){
+        console.log(error)
          return res.status(500).json({
+
                 success:false,
-                message:error.message
+                message:error.message,
+                 
             })
     }
 }
