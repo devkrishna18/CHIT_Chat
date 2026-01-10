@@ -22,7 +22,7 @@ app.use(cookieParser());
 // CORS Setup (Frontend 5173 ke liye allow karein)
 app.use(cors({
     origin:["http://localhost:5173",
-        "https://chit-chat-eight-delta.vercel.app"
+        "https://chit-chat-gamma-six.vercel.app"
     ],
     credentials: true // Cookies bhejne ke liye zaruri hai
 }));
